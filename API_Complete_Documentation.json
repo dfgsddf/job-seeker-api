@@ -1,0 +1,500 @@
+{
+  "api_name": "Job Seeker API System",
+  "description": "Complete API documentation for the Job Application System",
+  "base_url": "http://127.0.0.1:8000",
+  "version": "1.0.0",
+  "author": "Student",
+  "date_created": "2025-07-30",
+  "endpoints": {
+    "authentication": {
+      "login": {
+        "method": "POST",
+        "url": "{{base_url}}/api/login",
+        "description": "تسجيل دخول المستخدم",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "test@example.com",
+          "password": "password123"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "message": "تم تسجيل الدخول بنجاح",
+            "token": "4|hr6e3Qy9eV4ir3Pvb59zoFtCuPgHc0SEdPhE0KXqabfe19ab...",
+            "user": {
+              "id": 1,
+              "name": "Test User",
+              "email": "test@example.com",
+              "created_at": "2025-07-30T11:28:54.000000Z",
+              "updated_at": "2025-07-30T11:28:54.000000Z"
+            }
+          }
+        },
+        "response_error": {
+          "status": 401,
+          "body": {
+            "message": "بيانات غير صحيحة"
+          }
+        }
+      },
+      "register": {
+        "method": "POST",
+        "url": "{{base_url}}/api/register",
+        "description": "تسجيل مستخدم جديد",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "name": "New User",
+          "email": "newuser@example.com",
+          "password": "password123",
+          "password_confirmation": "password123"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "message": "تم التسجيل بنجاح",
+            "token": "5|abc123def456...",
+            "user": {
+              "id": 2,
+              "name": "New User",
+              "email": "newuser@example.com",
+              "created_at": "2025-07-30T12:00:00.000000Z",
+              "updated_at": "2025-07-30T12:00:00.000000Z"
+            }
+          }
+        }
+      }
+    },
+    "jobs": {
+      "get_all_jobs": {
+        "method": "GET",
+        "url": "{{base_url}}/api/jobs",
+        "description": "الحصول على جميع الوظائف",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "title": "مطور ويب",
+                "company": "شركة التقنية",
+                "location": "الرياض",
+                "type": "دوام كامل",
+                "salary": "8000-12000 ريال",
+                "description": "نبحث عن مطور ويب موهوب...",
+                "requirements": "خبرة 3 سنوات في PHP/Laravel",
+                "created_at": "2025-07-30T10:00:00.000000Z"
+              }
+            ]
+          }
+        }
+      },
+      "get_job_by_id": {
+        "method": "GET",
+        "url": "{{base_url}}/api/jobs/{id}",
+        "description": "الحصول على وظيفة محددة",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "id": 1,
+            "title": "مطور ويب",
+            "company": "شركة التقنية",
+            "location": "الرياض",
+            "type": "دوام كامل",
+            "salary": "8000-12000 ريال",
+            "description": "نبحث عن مطور ويب موهوب...",
+            "requirements": "خبرة 3 سنوات في PHP/Laravel",
+            "views": 15,
+            "created_at": "2025-07-30T10:00:00.000000Z"
+          }
+        }
+      },
+      "search_jobs": {
+        "method": "POST",
+        "url": "{{base_url}}/api/jobs/search",
+        "description": "البحث في الوظائف",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "keyword": "مطور",
+          "location": "الرياض",
+          "type": "دوام كامل"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "title": "مطور ويب",
+                "company": "شركة التقنية",
+                "location": "الرياض",
+                "type": "دوام كامل",
+                "salary": "8000-12000 ريال"
+              }
+            ],
+            "total": 1
+          }
+        }
+      },
+      "apply_for_job": {
+        "method": "POST",
+        "url": "{{base_url}}/api/jobs/{jobId}/apply",
+        "description": "التقديم على وظيفة",
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {token}"
+        },
+        "body": {
+          "cover_letter": "أنا مهتم بهذه الوظيفة...",
+          "resume": "base64_encoded_resume_data"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "message": "تم تقديم الطلب بنجاح",
+            "application_id": 1,
+            "status": "pending"
+          }
+        }
+      }
+    },
+    "companies": {
+      "get_all_companies": {
+        "method": "GET",
+        "url": "{{base_url}}/api/companies",
+        "description": "الحصول على جميع الشركات",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "name": "شركة التقنية",
+                "industry": "تقنية المعلومات",
+                "location": "الرياض",
+                "website": "https://techcompany.com",
+                "description": "شركة رائدة في مجال التقنية...",
+                "founded_year": 2015,
+                "employee_count": "50-100"
+              }
+            ]
+          }
+        }
+      },
+      "get_company_by_id": {
+        "method": "GET",
+        "url": "{{base_url}}/api/companies/{id}",
+        "description": "الحصول على شركة محددة",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "id": 1,
+            "name": "شركة التقنية",
+            "industry": "تقنية المعلومات",
+            "location": "الرياض",
+            "website": "https://techcompany.com",
+            "description": "شركة رائدة في مجال التقنية...",
+            "founded_year": 2015,
+            "employee_count": "50-100",
+            "jobs": [
+              {
+                "id": 1,
+                "title": "مطور ويب",
+                "type": "دوام كامل",
+                "salary": "8000-12000 ريال"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "favorites": {
+      "get_favorites": {
+        "method": "GET",
+        "url": "{{base_url}}/api/favorites",
+        "description": "الحصول على المفضلة",
+        "headers": {
+          "Authorization": "Bearer {token}"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "job": {
+                  "id": 1,
+                  "title": "مطور ويب",
+                  "company": "شركة التقنية",
+                  "location": "الرياض"
+                },
+                "applied": false,
+                "created_at": "2025-07-30T10:00:00.000000Z"
+              }
+            ]
+          }
+        }
+      },
+      "add_to_favorites": {
+        "method": "POST",
+        "url": "{{base_url}}/api/favorites",
+        "description": "إضافة وظيفة للمفضلة",
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {token}"
+        },
+        "body": {
+          "job_id": 1
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "message": "تمت الإضافة للمفضلة بنجاح",
+            "favorite_id": 1
+          }
+        }
+      },
+      "remove_from_favorites": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/favorites/{id}",
+        "description": "إزالة من المفضلة",
+        "headers": {
+          "Authorization": "Bearer {token}"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "message": "تمت الإزالة من المفضلة بنجاح"
+          }
+        }
+      },
+      "toggle_applied_status": {
+        "method": "PATCH",
+        "url": "{{base_url}}/api/favorites/{id}/toggle-applied",
+        "description": "تغيير حالة التقديم",
+        "headers": {
+          "Authorization": "Bearer {token}"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "message": "تم تحديث حالة التقديم",
+            "applied": true
+          }
+        }
+      }
+    },
+    "applications": {
+      "get_my_applications": {
+        "method": "GET",
+        "url": "{{base_url}}/api/my-applications",
+        "description": "الحصول على طلباتي",
+        "headers": {
+          "Authorization": "Bearer {token}"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "job": {
+                  "id": 1,
+                  "title": "مطور ويب",
+                  "company": "شركة التقنية"
+                },
+                "status": "pending",
+                "applied_at": "2025-07-30T10:00:00.000000Z",
+                "cover_letter": "أنا مهتم بهذه الوظيفة..."
+              }
+            ]
+          }
+        }
+      },
+      "get_application_status": {
+        "method": "GET",
+        "url": "{{base_url}}/api/applications/{applicationId}/status",
+        "description": "الحصول على حالة الطلب",
+        "headers": {
+          "Authorization": "Bearer {token}"
+        },
+        "response_success": {
+          "status": 200,
+          "body": {
+            "application_id": 1,
+            "status": "pending",
+            "updated_at": "2025-07-30T10:00:00.000000Z",
+            "notes": "قيد المراجعة"
+          }
+        }
+      }
+    },
+    "policies": {
+      "get_all_policies": {
+        "method": "GET",
+        "url": "{{base_url}}/api/policies",
+        "description": "الحصول على جميع السياسات",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "title": "سياسة الخصوصية",
+                "type": "privacy",
+                "content": "نحن نحترم خصوصيتك...",
+                "created_at": "2025-07-30T10:00:00.000000Z"
+              }
+            ]
+          }
+        }
+      },
+      "get_privacy_policy": {
+        "method": "GET",
+        "url": "{{base_url}}/api/policies/privacy",
+        "description": "الحصول على سياسة الخصوصية",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "id": 1,
+            "title": "سياسة الخصوصية",
+            "content": "نحن نحترم خصوصيتك...",
+            "last_updated": "2025-07-30T10:00:00.000000Z"
+          }
+        }
+      },
+      "get_terms_of_service": {
+        "method": "GET",
+        "url": "{{base_url}}/api/policies/terms",
+        "description": "الحصول على شروط الخدمة",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "id": 2,
+            "title": "شروط الخدمة",
+            "content": "باستخدام هذه الخدمة...",
+            "last_updated": "2025-07-30T10:00:00.000000Z"
+          }
+        }
+      }
+    },
+    "dashboard": {
+      "get_dashboard_stats": {
+        "method": "GET",
+        "url": "{{base_url}}/api/dashboard/stats",
+        "description": "الحصول على إحصائيات لوحة التحكم",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "total_jobs": 150,
+            "total_companies": 25,
+            "total_applications": 45,
+            "active_jobs": 120,
+            "recent_applications": 10
+          }
+        }
+      }
+    },
+    "users": {
+      "get_all_users": {
+        "method": "GET",
+        "url": "{{base_url}}/api/users",
+        "description": "الحصول على جميع المستخدمين",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "name": "Test User",
+                "email": "test@example.com",
+                "created_at": "2025-07-30T10:00:00.000000Z"
+              }
+            ]
+          }
+        }
+      },
+      "get_user_by_id": {
+        "method": "GET",
+        "url": "{{base_url}}/api/users/{id}",
+        "description": "الحصول على مستخدم محدد",
+        "headers": {},
+        "response_success": {
+          "status": 200,
+          "body": {
+            "id": 1,
+            "name": "Test User",
+            "email": "test@example.com",
+            "created_at": "2025-07-30T10:00:00.000000Z",
+            "applications_count": 5,
+            "favorites_count": 3
+          }
+        }
+      }
+    }
+  },
+  "authentication": {
+    "type": "Bearer Token",
+    "description": "يتم استخدام Laravel Sanctum للمصادقة",
+    "token_format": "Bearer {token}",
+    "token_header": "Authorization"
+  },
+  "error_responses": {
+    "401_unauthorized": {
+      "status": 401,
+      "message": "غير مصرح"
+    },
+    "404_not_found": {
+      "status": 404,
+      "message": "غير موجود"
+    },
+    "422_validation_error": {
+      "status": 422,
+      "message": "خطأ في التحقق من البيانات",
+      "errors": {
+        "field_name": ["رسالة الخطأ"]
+      }
+    },
+    "500_server_error": {
+      "status": 500,
+      "message": "خطأ في الخادم"
+    }
+  },
+  "testing_credentials": {
+    "email": "test@example.com",
+    "password": "password123"
+  },
+  "features_implemented": [
+    "نظام تسجيل الدخول والتسجيل",
+    "إدارة الوظائف (عرض، بحث، تطبيق)",
+    "إدارة الشركات",
+    "نظام المفضلة",
+    "إدارة طلبات التوظيف",
+    "نظام السياسات والشروط",
+    "لوحة تحكم مع إحصائيات",
+    "مصادقة باستخدام Laravel Sanctum",
+    "واجهة برمجة RESTful API",
+    "دعم اللغة العربية"
+  ],
+  "technologies_used": [
+    "Laravel 10",
+    "PHP 8.1+",
+    "MySQL Database",
+    "Laravel Sanctum",
+    "RESTful API Design"
+  ]
+} 
