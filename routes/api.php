@@ -73,7 +73,7 @@ Route::post('/users', [UserController::class, 'store']);
 Route::get('/jobs', [JobController::class, 'index']);
 Route::get('/jobs/{id}', [JobController::class, 'show']);
 Route::post('/jobs/search', [JobController::class, 'search']);
-Route::post('/jobs/{jobId}/apply', [JobApplicationController::class, 'submitApplication']);
+Route::post('/jobs/{jobId}/apply', [JobApplicationController::class, 'submitApplication'])->middleware('auth:sanctum');
 Route::get('/jobs/{jobId}/apply', [JobApplicationController::class, 'showApplicationForm']);
 
 // Company routes

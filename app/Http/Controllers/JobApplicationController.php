@@ -96,19 +96,12 @@ class JobApplicationController extends Controller
                 throw new \Exception('يجب إضافة مهارة واحدة على الأقل');
             }
             
-            // الحصول على أو إنشاء مستخدم افتراضي
+            // الحصول على المستخدم المسجل دخول
             $userId = Auth::id();
             if (!$userId) {
-                // البحث عن مستخدم افتراضي أو إنشاء واحد
-                $defaultUser = \App\Models\User::first();
-                if (!$defaultUser) {
-                    $defaultUser = \App\Models\User::create([
-                        'name' => 'مستخدم افتراضي',
-                        'email' => 'default@example.com',
-                        'password' => bcrypt('password')
-                    ]);
-                }
-                $userId = $defaultUser->id;
+                return response()->json([
+                    'message' => 'يجب تسجيل الدخول أولاً'
+                ], 401);
             }
             
             // إنشاء طلب التقديم

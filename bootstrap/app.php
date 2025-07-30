@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \App\Http\Middleware\Cors::class,
         ]);
         
         $middleware->alias([

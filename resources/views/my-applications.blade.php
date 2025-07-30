@@ -965,6 +965,23 @@
                 padding: 15px 20px;
             }
         }
+
+        .login-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1026,19 +1043,50 @@
 
         // Load applications on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                showError('يرجى تسجيل الدخول أولاً للوصول إلى طلباتك');
+                return;
+            }
             loadApplications();
         });
 
         async function loadApplications() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/my-applications`);
+                // Get token from localStorage or session
+                const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/my-applications`, {
+                    method: 'GET',
+                    headers: headers
+                });
+                
                 const data = await response.json();
 
                 if (response.ok) {
-                    applicationsData = data.applications; // Store applications globally
+                    applicationsData = data.applications || data.data || []; // Store applications globally
+                    console.log('Applications data:', applicationsData);
                     displayApplications(applicationsData);
+                    
+                    // Update count
+                    const count = applicationsData.length;
+                    document.getElementById('applicationsCount').textContent = `${count} طلب`;
                 } else {
-                    showError('حدث خطأ في تحميل الطلبات');
+                    console.error('Load applications failed:', response.status, response.statusText);
+                    if (response.status === 401) {
+                        showError('يرجى تسجيل الدخول أولاً');
+                    } else {
+                        showError('حدث خطأ في تحميل الطلبات');
+                    }
                 }
             } catch (error) {
                 console.error('Error loading applications:', error);
@@ -1079,12 +1127,25 @@
 
         function showError(message) {
             const container = document.getElementById('applicationsList');
-            container.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    ${message}
-                </div>
-            `;
+            const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            
+            if (!token && message.includes('تسجيل الدخول')) {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${message}
+                        <br><br>
+                        <a href="/login" class="login-btn">تسجيل الدخول</a>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${message}
+                    </div>
+                `;
+            }
         }
 
         // متغير عام لتخزين بيانات الطلبات
@@ -1118,6 +1179,13 @@
                 }, 300);
             }
             
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                showNotification('يرجى تسجيل الدخول أولاً لعرض تفاصيل الطلب', 'error');
+                return;
+            }
+            
             // البحث عن بيانات الطلب
             const application = findApplicationById(applicationId);
             if (application) {
@@ -1136,7 +1204,15 @@
             
             modalHeader.innerHTML = '<i class="fas fa-file-alt"></i> تفاصيل الطلب';
             
-            const applicationData = JSON.parse(application.notes || '{}');
+            // Parse application data with error handling
+            let applicationData = {};
+            try {
+                applicationData = JSON.parse(application.notes || '{}');
+            } catch (error) {
+                console.error('Error parsing application data:', error);
+                applicationData = {};
+            }
+            
             const statusClass = getStatusClass(application.status);
             const statusText = getStatusText(application.status);
             
@@ -1164,15 +1240,15 @@
                     <div class="detail-grid">
                         <div class="detail-item-modal">
                             <h4>الاسم الكامل</h4>
-                            <p>${applicationData.name || 'غير متوفر'}</p>
+                            <p>${applicationData.personal_info?.full_name || 'غير متوفر'}</p>
                         </div>
                         <div class="detail-item-modal">
                             <h4>البريد الإلكتروني</h4>
-                            <p>${applicationData.email || 'غير متوفر'}</p>
+                            <p>${applicationData.personal_info?.email || 'غير متوفر'}</p>
                         </div>
                         <div class="detail-item-modal">
                             <h4>رقم الهاتف</h4>
-                            <p>${applicationData.phone || 'غير متوفر'}</p>
+                            <p>${applicationData.personal_info?.phone || 'غير متوفر'}</p>
                         </div>
                     </div>
                 </div>
@@ -1182,15 +1258,15 @@
                     <div class="detail-grid">
                         <div class="detail-item-modal">
                             <h4>الدرجة العلمية</h4>
-                            <p>${applicationData.education || 'غير متوفر'}</p>
+                            <p>${applicationData.education?.degree || 'غير متوفر'}</p>
                         </div>
                         <div class="detail-item-modal">
                             <h4>سنوات الخبرة</h4>
-                            <p>${applicationData.experience || 'غير متوفر'}</p>
+                            <p>${applicationData.experience?.years_of_experience ? applicationData.experience.years_of_experience + ' سنوات' : 'غير متوفر'}</p>
                         </div>
                         <div class="detail-item-modal">
                             <h4>المهارات</h4>
-                            <p>${applicationData.skills || 'غير متوفر'}</p>
+                            <p>${Array.isArray(applicationData.skills) ? applicationData.skills.join(', ') : 'غير متوفر'}</p>
                         </div>
                     </div>
                 </div>
@@ -1209,12 +1285,12 @@
                     </div>
                 </div>
 
-                ${applicationData.cover_letter ? `
+                ${application.cover_letter ? `
                 <div class="detail-section">
                     <h3><i class="fas fa-file-text"></i> خطاب التقديم</h3>
                     <div class="detail-item-modal">
                         <h4>المحتوى</h4>
-                        <p>${applicationData.cover_letter}</p>
+                        <p>${application.cover_letter}</p>
                     </div>
                 </div>
                 ` : ''}
@@ -1240,11 +1316,20 @@
             try {
                 showNotification('جاري تحميل السيرة الذاتية...', 'info');
                 
+                // Get token from localStorage or session
+                const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+                
+                const headers = {
+                    'Accept': 'application/octet-stream',
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
                 const response = await fetch(`${API_BASE_URL}/api/applications/${currentApplicationData.id}/resume`, {
                     method: 'GET',
-                    headers: {
-                        'Accept': 'application/octet-stream',
-                    }
+                    headers: headers
                 });
 
                 if (response.ok) {
@@ -1308,20 +1393,44 @@
                 }, 300);
             }
             
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                showNotification('يرجى تسجيل الدخول أولاً للوصول إلى حالة الطلب', 'error');
+                return;
+            }
+            
             try {
                 showNotification('جاري التحقق من حالة الطلب...', 'info');
                 
-                const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/status`);
+                // Get token from localStorage or session
+                const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/status`, {
+                    method: 'GET',
+                    headers: headers
+                });
                 
                 if (response.ok) {
                     const data = await response.json();
                     const application = data.application;
                     const statusInfo = data.status_info;
                     
+                    console.log('Application status data:', data);
+                    
                     // عرض حالة الطلب في نافذة منبثقة
                     showStatusModal(application, statusInfo);
                 } else {
                     const errorData = await response.json();
+                    console.error('Status check failed:', errorData);
                     showNotification(errorData.message || 'حدث خطأ في التحقق من حالة الطلب', 'error');
                 }
             } catch (error) {
@@ -1397,14 +1506,30 @@
                 }, 300);
             }
             
+            // Check if user is logged in
+            const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                showNotification('يرجى تسجيل الدخول أولاً لتحميل السيرة الذاتية', 'error');
+                return;
+            }
+            
             try {
                 showNotification('جاري تحميل السيرة الذاتية...', 'info');
                 
+                // Get token from localStorage or session
+                const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+                
+                const headers = {
+                    'Accept': 'application/octet-stream',
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
                 const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/resume`, {
                     method: 'GET',
-                    headers: {
-                        'Accept': 'application/octet-stream',
-                    }
+                    headers: headers
                 });
 
                 if (response.ok) {
@@ -1506,14 +1631,22 @@
             const applicationsHTML = applications.map((application, index) => {
                 const statusClass = getStatusClass(application.status);
                 const statusText = getStatusText(application.status);
-                const applicationData = JSON.parse(application.notes || '{}');
+                
+                // Parse application data with error handling
+                let applicationData = {};
+                try {
+                    applicationData = JSON.parse(application.notes || '{}');
+                } catch (error) {
+                    console.error('Error parsing application data:', error);
+                    applicationData = {};
+                }
                 
                 return `
                     <div class="application-card" style="animation-delay: ${index * 0.1}s">
                         <div class="application-header">
                             <div>
                                 <h3 class="job-title">${application.job_post?.title || 'وظيفة غير متاحة'}</h3>
-                                <p class="company-name">${application.job_post?.company?.name || 'شركة غير متاحة'}</p>
+                                <p class="company-name">${application.job_post?.company_name || 'شركة غير متاحة'}</p>
                             </div>
                             <span class="application-status ${statusClass}">${statusText}</span>
                         </div>
@@ -1525,7 +1658,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <h4>الاسم</h4>
-                                    <p>${applicationData.name || 'غير متوفر'}</p>
+                                    <p>${applicationData.personal_info?.full_name || 'غير متوفر'}</p>
                                 </div>
                             </div>
                             
@@ -1535,7 +1668,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <h4>سنوات الخبرة</h4>
-                                    <p>${applicationData.experience || 'غير متوفر'}</p>
+                                    <p>${applicationData.experience?.years_of_experience ? applicationData.experience.years_of_experience + ' سنوات' : 'غير متوفر'}</p>
                                 </div>
                             </div>
                             
@@ -1545,7 +1678,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <h4>الدرجة العلمية</h4>
-                                    <p>${applicationData.education || 'غير متوفر'}</p>
+                                    <p>${applicationData.education?.degree || 'غير متوفر'}</p>
                                 </div>
                             </div>
                             
@@ -1555,7 +1688,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <h4>البريد الإلكتروني</h4>
-                                    <p>${applicationData.email || 'غير متوفر'}</p>
+                                    <p>${applicationData.personal_info?.email || 'غير متوفر'}</p>
                                 </div>
                             </div>
                             

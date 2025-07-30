@@ -1060,11 +1060,20 @@
                 console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
                 console.log('Job ID:', jobId);
                 
+                // Get token from localStorage
+                const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+                
+                const headers = {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
                 const response = await fetch(`/api/jobs/${jobId}/apply`, {
                     method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
+                    headers: headers,
                     body: formData
                 });
 
